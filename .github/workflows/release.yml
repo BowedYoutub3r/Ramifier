@@ -37,6 +37,11 @@ jobs:
           Copy-Item src/local/imdiskinst.exe publish/imdiskinst.exe
           Compress-Archive -Path publish/Ramifier.exe, publish/imdiskinst.exe -DestinationPath Ramifier-${{ github.ref_name }}-win-x64.zip
 
+      - name: Generate checksums
+        run: |
+          Get-FileHash Ramifier-${{ github.ref_name }}-win-x64.zip -Algorithm SHA256 | Select-Object -ExpandProperty Hash > checksums.txt
+          Get-FileHash publish/Ramifier.exe -Algorithm SHA256 | Select-Object -ExpandProperty Hash >> checksums.txt
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -45,3 +50,4 @@ jobs:
             Ramifier-${{ github.ref_name }}-win-x64.zip
             publish/Ramifier.exe
             publish/imdiskinst.exe
+            checksums.txt
