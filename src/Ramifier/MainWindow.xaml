@@ -2,41 +2,42 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Ramifier.ViewModels"
-        Title="Ramifier" Height="640" Width="540"
-        MinHeight="520" MinWidth="420"
+        Title="Ramifier" Height="560" Width="700"
+        MinHeight="480" MinWidth="580"
         Background="{StaticResource BgBrush}"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResizeWithGrip"
         SnapsToDevicePixels="True"
-        UseLayoutRounding="True">
+        UseLayoutRounding="True"
+        FontFamily="Segoe UI">
 
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <DockPanel Margin="20">
+    <DockPanel Margin="24">
 
         <!-- Header -->
-        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
-            <TextBlock FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextBrush}">
-                <Run Text="⚡"/>
-                <Run Text=" Ramifier"/>
-            </TextBlock>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
+                       Text="Ramifier" VerticalAlignment="Center"/>
             <TextBlock Text="RAM Disk Manager" FontSize="13"
-                       Foreground="{StaticResource TextDimBrush}" Margin="2,2,0,0"/>
-        </StackPanel>
+                       Foreground="{StaticResource TextDimBrush}" VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
+        </DockPanel>
 
         <!-- ImDisk Warning + Install -->
-        <Border DockPanel.Dock="Top" Background="#3F2A1A" CornerRadius="6" Padding="12" Margin="0,0,0,12"
+        <Border DockPanel.Dock="Top" CornerRadius="8" Padding="14" Margin="0,0,0,16"
+                BorderBrush="#B91C1C" BorderThickness="1"
+                Background="#1C0A0A"
                 Visibility="{Binding IsImDiskInstalled, Converter={StaticResource InverseBoolToVis}}">
             <DockPanel>
-                <Button DockPanel.Dock="Right" Content="Install ImDisk"
+                <Button DockPanel.Dock="Right" Content="Install"
                         Command="{Binding InstallImDiskCommand}"
                         Style="{StaticResource AccentButton}"
-                        Padding="14,6" FontSize="12" Margin="12,0,0,0"
-                        VerticalAlignment="Center"/>
-                <TextBlock Text="⚠ ImDisk Toolkit not detected. Click Install to download and set it up automatically."
-                           Foreground="#FBBF24" TextWrapping="Wrap" FontSize="12"
+                        Margin="14,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Text="ImDisk Toolkit is required but not installed."
+                           Foreground="#FCA5A5" TextWrapping="Wrap" FontSize="13"
                            VerticalAlignment="Center"/>
             </DockPanel>
         </Border>
@@ -44,22 +45,22 @@
         <!-- Status Bar -->
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}"
                    Foreground="{StaticResource TextDimBrush}"
-                   FontSize="11" Margin="2,6,0,0"/>
+                   FontSize="11" Margin="0,8,0,0"/>
 
         <!-- RAM Info -->
         <Border DockPanel.Dock="Bottom" Background="{StaticResource SurfaceBrush}"
-                CornerRadius="6" Padding="12">
+                CornerRadius="8" Padding="14"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="SYSTEM MEMORY" FontSize="10" FontWeight="Bold"
+                    <TextBlock Text="System Memory" FontSize="12" FontWeight="Medium"
                                Foreground="{StaticResource TextDimBrush}"/>
                     <ProgressBar Value="{Binding RamUsagePercent, Mode=OneWay}"
-                                 Height="4" Minimum="0" Maximum="100" Margin="0,6,0,0"
-                                 Background="{StaticResource BorderBrush}"
+                                 Minimum="0" Maximum="100" Margin="0,8,0,0"
                                  Foreground="{StaticResource SuccessBrush}"/>
                 </StackPanel>
                 <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12" Margin="16,0,0,0">
@@ -70,134 +71,149 @@
             </Grid>
         </Border>
 
-        <!-- Create Section -->
-        <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceBrush}"
-                CornerRadius="8" Padding="16" Margin="0,0,0,12">
-            <StackPanel>
-                <TextBlock Text="CREATE RAM DISK" FontSize="11" FontWeight="Bold"
-                           Foreground="{StaticResource AccentBrush}" Margin="0,0,0,12"/>
+        <!-- Main content: left create, right active disks -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="240"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+            <!-- Left: Create Section -->
+            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}"
+                    CornerRadius="8" Padding="18"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Create RAM Disk" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}" Margin="0,0,0,14"/>
 
-                    <Label Grid.Row="0" Grid.Column="0" Content="Drive Letter"/>
-                    <ComboBox Grid.Row="1" Grid.Column="0"
-                              ItemsSource="{Binding DriveLetters}"
-                              SelectedItem="{Binding SelectedDriveLetter}"/>
+                    <Button DockPanel.Dock="Bottom" Content="Create" Style="{StaticResource AccentButton}"
+                            Command="{Binding CreateCommand}" Margin="0,16,0,0"
+                            HorizontalAlignment="Stretch"/>
 
-                    <Label Grid.Row="0" Grid.Column="2" Content="Size"/>
-                    <TextBox Grid.Row="1" Grid.Column="2" MinWidth="60"
-                             Text="{Binding SelectedSizeValue, UpdateSourceTrigger=PropertyChanged}"
-                             TextAlignment="Center"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <Label Grid.Row="0" Grid.Column="4" Content="Unit"/>
-                    <ComboBox Grid.Row="1" Grid.Column="4" MinWidth="60"
-                              ItemsSource="{Binding SizeUnits}"
-                              SelectedItem="{Binding SelectedSizeUnit}"/>
+                        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Content="Drive Letter"/>
+                        <ComboBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                  ItemsSource="{Binding DriveLetters}"
+                                  SelectedItem="{Binding SelectedDriveLetter}"/>
 
-                    <Label Grid.Row="3" Grid.Column="0" Content="File System"/>
-                    <ComboBox Grid.Row="4" Grid.Column="0"
-                              ItemsSource="{Binding FileSystems}"
-                              SelectedItem="{Binding SelectedFileSystem}"/>
+                        <Label Grid.Row="3" Grid.Column="0" Content="Size" Margin="0,2,0,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="0"
+                                 Text="{Binding SelectedSizeValue, UpdateSourceTrigger=PropertyChanged}"
+                                 TextAlignment="Center"/>
 
-                    <Label Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Content="Label"/>
-                    <TextBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
-                             Text="{Binding VolumeLabel, UpdateSourceTrigger=PropertyChanged}"/>
-                </Grid>
+                        <Label Grid.Row="3" Grid.Column="2" Content="Unit" Margin="0,2,0,0"/>
+                        <ComboBox Grid.Row="4" Grid.Column="2"
+                                  ItemsSource="{Binding SizeUnits}"
+                                  SelectedItem="{Binding SelectedSizeUnit}"/>
 
-                <Button Content="Create RAM Disk" Style="{StaticResource AccentButton}"
-                        Command="{Binding CreateCommand}" Margin="0,14,0,0"
-                        HorizontalAlignment="Stretch"/>
-            </StackPanel>
-        </Border>
+                        <Label Grid.Row="6" Grid.Column="0" Content="File System"/>
+                        <ComboBox Grid.Row="7" Grid.Column="0"
+                                  ItemsSource="{Binding FileSystems}"
+                                  SelectedItem="{Binding SelectedFileSystem}"/>
 
-        <!-- Active Disks -->
-        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,12">
-            <DockPanel>
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                    <TextBlock Text="ACTIVE RAM DISKS" FontSize="11" FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"/>
-                    <Button Content="Remove All" Style="{StaticResource DangerButton}"
-                            Command="{Binding RemoveAllCommand}"
-                            HorizontalAlignment="Right"/>
+                        <Label Grid.Row="6" Grid.Column="2" Content="Label"/>
+                        <TextBox Grid.Row="7" Grid.Column="2"
+                                 Text="{Binding VolumeLabel, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
                 </DockPanel>
+            </Border>
 
-                <Grid>
-                    <TextBlock Text="No active RAM disks" Foreground="{StaticResource TextDimBrush}"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
-                               Visibility="{Binding ActiveDisks.Count, Converter={StaticResource ZeroToVis}}"/>
+            <!-- Right: Active Disks -->
+            <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}"
+                    CornerRadius="8" Padding="18"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                        <TextBlock Text="Active Disks" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}" VerticalAlignment="Center"/>
+                        <Button Content="Remove All" Style="{StaticResource GhostButton}"
+                                Command="{Binding RemoveAllCommand}"
+                                HorizontalAlignment="Right"/>
+                    </DockPanel>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                  Padding="0,0,4,0">
-                        <ItemsControl ItemsSource="{Binding ActiveDisks}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{StaticResource BgBrush}" CornerRadius="6"
-                                            Padding="12" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                    <Grid>
+                        <TextBlock Text="No active RAM disks" Foreground="{StaticResource TextDimBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
+                                   Visibility="{Binding ActiveDisks.Count, Converter={StaticResource ZeroToVis}}"/>
 
-                                            <Border Grid.Column="0" Background="{StaticResource AccentBrush}"
-                                                    CornerRadius="4" Width="44" Height="44"
-                                                    VerticalAlignment="Center" Margin="0,0,12,0">
-                                                <TextBlock Text="{Binding DriveLetter}" FontSize="20" FontWeight="Bold"
-                                                           Foreground="White" HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding ActiveDisks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource BgBrush}" CornerRadius="8"
+                                                Padding="12" Margin="0,0,0,8"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
-                                                <TextBlock Foreground="{StaticResource TextBrush}" FontSize="14"
-                                                           TextTrimming="CharacterEllipsis">
-                                                    <Run Text="{Binding DriveLetter, Mode=OneWay}"/>
-                                                    <Run Text=":\" FontWeight="Bold"/>
-                                                    <Run Text=" — " Foreground="{StaticResource TextDimBrush}"/>
-                                                    <Run Text="{Binding SizeDisplay, Mode=OneWay}"/>
-                                                    <Run Text=" "/>
-                                                    <Run Text="{Binding FileSystem, Mode=OneWay}"
-                                                         Foreground="{StaticResource TextDimBrush}"/>
-                                                </TextBlock>
-                                                <ProgressBar Value="{Binding UsagePercent, Mode=OneWay}"
-                                                             Height="4" Minimum="0" Maximum="100" Margin="0,6,0,0"
-                                                             Background="{StaticResource BorderBrush}"
-                                                             Foreground="{StaticResource AccentBrush}"/>
-                                                <TextBlock FontSize="11" Foreground="{StaticResource TextDimBrush}" Margin="0,4,0,0">
-                                                    <Run Text="{Binding UsedDisplay, Mode=OneWay}"/>
-                                                    <Run Text=" used / "/>
-                                                    <Run Text="{Binding FreeDisplay, Mode=OneWay}"/>
-                                                    <Run Text=" free"/>
-                                                </TextBlock>
-                                            </StackPanel>
+                                                <Border Grid.Column="0" Background="{StaticResource HoverBrush}"
+                                                        CornerRadius="6" Width="40" Height="40"
+                                                        VerticalAlignment="Center" Margin="0,0,12,0"
+                                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                                    <TextBlock Text="{Binding DriveLetter}" FontSize="16" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextBrush}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
 
-                                            <Button Grid.Column="2" Content="✕" Style="{StaticResource DangerButton}"
-                                                    Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    VerticalAlignment="Center" Width="32" Height="32" Padding="0"
-                                                    FontSize="14"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </DockPanel>
-        </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                    <TextBlock Foreground="{StaticResource TextBrush}" FontSize="13"
+                                                               FontWeight="Medium" TextTrimming="CharacterEllipsis">
+                                                        <Run Text="{Binding DriveLetter, Mode=OneWay}"/>
+                                                        <Run Text=":\"/>
+                                                        <Run Text=" — " Foreground="{StaticResource TextDimBrush}"/>
+                                                        <Run Text="{Binding SizeDisplay, Mode=OneWay}"
+                                                             Foreground="{StaticResource TextDimBrush}"/>
+                                                        <Run Text=" "/>
+                                                        <Run Text="{Binding FileSystem, Mode=OneWay}"
+                                                             Foreground="{StaticResource TextDimBrush}"/>
+                                                    </TextBlock>
+                                                    <ProgressBar Value="{Binding UsagePercent, Mode=OneWay}"
+                                                                 Minimum="0" Maximum="100" Margin="0,6,0,0"
+                                                                 Foreground="{StaticResource AccentBrush}"/>
+                                                    <TextBlock FontSize="11" Foreground="{StaticResource TextDimBrush}" Margin="0,4,0,0">
+                                                        <Run Text="{Binding UsedDisplay, Mode=OneWay}"/>
+                                                        <Run Text=" used"/>
+                                                        <Run Text="  ·  " Foreground="{StaticResource BorderBrush}"/>
+                                                        <Run Text="{Binding FreeDisplay, Mode=OneWay}"/>
+                                                        <Run Text=" free"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+
+                                                <Button Grid.Column="2" Content="✕" Style="{StaticResource GhostButton}"
+                                                        Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        VerticalAlignment="Center" Width="30" Height="30" Padding="0"
+                                                        FontSize="12"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
     </DockPanel>
 </Window>
