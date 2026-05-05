@@ -1,0 +1,203 @@
+<Window x:Class="Ramifier.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Ramifier.ViewModels"
+        Title="Ramifier" Height="640" Width="540"
+        MinHeight="520" MinWidth="420"
+        Background="{StaticResource BgBrush}"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithGrip"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <DockPanel Margin="20">
+
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <TextBlock FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextBrush}">
+                <Run Text="⚡"/>
+                <Run Text=" Ramifier"/>
+            </TextBlock>
+            <TextBlock Text="RAM Disk Manager" FontSize="13"
+                       Foreground="{StaticResource TextDimBrush}" Margin="2,2,0,0"/>
+        </StackPanel>
+
+        <!-- ImDisk Warning + Install -->
+        <Border DockPanel.Dock="Top" Background="#3F2A1A" CornerRadius="6" Padding="12" Margin="0,0,0,12"
+                Visibility="{Binding IsImDiskInstalled, Converter={StaticResource InverseBoolToVis}}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Install ImDisk"
+                        Command="{Binding InstallImDiskCommand}"
+                        Style="{StaticResource AccentButton}"
+                        Padding="14,6" FontSize="12" Margin="12,0,0,0"
+                        VerticalAlignment="Center"/>
+                <TextBlock Text="⚠ ImDisk Toolkit not detected. Click Install to download and set it up automatically."
+                           Foreground="#FBBF24" TextWrapping="Wrap" FontSize="12"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Status Bar -->
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}"
+                   Foreground="{StaticResource TextDimBrush}"
+                   FontSize="11" Margin="2,6,0,0"/>
+
+        <!-- RAM Info -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource SurfaceBrush}"
+                CornerRadius="6" Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="SYSTEM MEMORY" FontSize="10" FontWeight="Bold"
+                               Foreground="{StaticResource TextDimBrush}"/>
+                    <ProgressBar Value="{Binding RamUsagePercent, Mode=OneWay}"
+                                 Height="4" Minimum="0" Maximum="100" Margin="0,6,0,0"
+                                 Background="{StaticResource BorderBrush}"
+                                 Foreground="{StaticResource SuccessBrush}"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12" Margin="16,0,0,0">
+                    <Run Text="{Binding AvailableRamDisplay, Mode=OneWay}" Foreground="{StaticResource SuccessBrush}"/>
+                    <Run Text=" free / " Foreground="{StaticResource TextDimBrush}"/>
+                    <Run Text="{Binding TotalRamDisplay, Mode=OneWay}" Foreground="{StaticResource TextBrush}"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- Create Section -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceBrush}"
+                CornerRadius="8" Padding="16" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="CREATE RAM DISK" FontSize="11" FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}" Margin="0,0,0,12"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Drive Letter"/>
+                    <ComboBox Grid.Row="1" Grid.Column="0"
+                              ItemsSource="{Binding DriveLetters}"
+                              SelectedItem="{Binding SelectedDriveLetter}"/>
+
+                    <Label Grid.Row="0" Grid.Column="2" Content="Size"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" MinWidth="60"
+                             Text="{Binding SelectedSizeValue, UpdateSourceTrigger=PropertyChanged}"
+                             TextAlignment="Center"/>
+
+                    <Label Grid.Row="0" Grid.Column="4" Content="Unit"/>
+                    <ComboBox Grid.Row="1" Grid.Column="4" MinWidth="60"
+                              ItemsSource="{Binding SizeUnits}"
+                              SelectedItem="{Binding SelectedSizeUnit}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="File System"/>
+                    <ComboBox Grid.Row="4" Grid.Column="0"
+                              ItemsSource="{Binding FileSystems}"
+                              SelectedItem="{Binding SelectedFileSystem}"/>
+
+                    <Label Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Content="Label"/>
+                    <TextBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                             Text="{Binding VolumeLabel, UpdateSourceTrigger=PropertyChanged}"/>
+                </Grid>
+
+                <Button Content="Create RAM Disk" Style="{StaticResource AccentButton}"
+                        Command="{Binding CreateCommand}" Margin="0,14,0,0"
+                        HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Active Disks -->
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <TextBlock Text="ACTIVE RAM DISKS" FontSize="11" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"/>
+                    <Button Content="Remove All" Style="{StaticResource DangerButton}"
+                            Command="{Binding RemoveAllCommand}"
+                            HorizontalAlignment="Right"/>
+                </DockPanel>
+
+                <Grid>
+                    <TextBlock Text="No active RAM disks" Foreground="{StaticResource TextDimBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
+                               Visibility="{Binding ActiveDisks.Count, Converter={StaticResource ZeroToVis}}"/>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  Padding="0,0,4,0">
+                        <ItemsControl ItemsSource="{Binding ActiveDisks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource BgBrush}" CornerRadius="6"
+                                            Padding="12" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Grid.Column="0" Background="{StaticResource AccentBrush}"
+                                                    CornerRadius="4" Width="44" Height="44"
+                                                    VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding DriveLetter}" FontSize="20" FontWeight="Bold"
+                                                           Foreground="White" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <TextBlock Foreground="{StaticResource TextBrush}" FontSize="14"
+                                                           TextTrimming="CharacterEllipsis">
+                                                    <Run Text="{Binding DriveLetter, Mode=OneWay}"/>
+                                                    <Run Text=":\" FontWeight="Bold"/>
+                                                    <Run Text=" — " Foreground="{StaticResource TextDimBrush}"/>
+                                                    <Run Text="{Binding SizeDisplay, Mode=OneWay}"/>
+                                                    <Run Text=" "/>
+                                                    <Run Text="{Binding FileSystem, Mode=OneWay}"
+                                                         Foreground="{StaticResource TextDimBrush}"/>
+                                                </TextBlock>
+                                                <ProgressBar Value="{Binding UsagePercent, Mode=OneWay}"
+                                                             Height="4" Minimum="0" Maximum="100" Margin="0,6,0,0"
+                                                             Background="{StaticResource BorderBrush}"
+                                                             Foreground="{StaticResource AccentBrush}"/>
+                                                <TextBlock FontSize="11" Foreground="{StaticResource TextDimBrush}" Margin="0,4,0,0">
+                                                    <Run Text="{Binding UsedDisplay, Mode=OneWay}"/>
+                                                    <Run Text=" used / "/>
+                                                    <Run Text="{Binding FreeDisplay, Mode=OneWay}"/>
+                                                    <Run Text=" free"/>
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2" Content="✕" Style="{StaticResource DangerButton}"
+                                                    Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    VerticalAlignment="Center" Width="32" Height="32" Padding="0"
+                                                    FontSize="14"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</Window>
