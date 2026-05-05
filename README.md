@@ -18,6 +18,7 @@ Grab the latest release from [Releases](../../releases). The zip includes:
 
 - **Ramifier.exe** — self-contained, no .NET SDK needed
 - **imdiskinst.exe** — ImDisk Toolkit installer (required driver)
+- **checksums.txt** - Checksum verification file(SHA256 checksums)
 
 On first launch, if ImDisk isn't installed, the app will download and install it for you automatically.
 
