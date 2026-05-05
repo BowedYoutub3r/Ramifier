@@ -7,7 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.4</Version>
+    <ApplicationIcon>logo\ramifier_256.ico</ApplicationIcon>
+    <Version>1.0.5</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="logo\ramifier_256.ico" />
+  </ItemGroup>
 
 </Project>
