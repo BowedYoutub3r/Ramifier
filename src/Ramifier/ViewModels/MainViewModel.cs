@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -13,8 +14,10 @@ public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ImDiskService _imDisk = new();
     private readonly SettingsService _settingsService = new();
+    private readonly UpdateService _updateService = new();
     private readonly DispatcherTimer _refreshTimer;
     private AppSettings _settings;
+    private bool _updateCheckedOnce;
 
     private string _selectedDriveLetter = "";
     private int _selectedSizeValue = 1;
@@ -26,6 +29,8 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isImDiskInstalled;
     private long _totalRam;
     private long _availableRam;
+    private bool _updateAvailable;
+    private string _updateVersion = "";
 
     public MainViewModel()
     {
@@ -47,6 +52,8 @@ public class MainViewModel : INotifyPropertyChanged
         RefreshCommand = new RelayCommand(_ => Refresh());
         InstallImDiskCommand = new RelayCommand(_ => InstallImDisk(), _ => !IsBusy && !IsImDiskInstalled);
         SettingsCommand = new RelayCommand(_ => OpenSettings());
+        UpdateCommand = new RelayCommand(_ => OpenUpdatePage(), _ => UpdateAvailable);
+        DismissUpdateCommand = new RelayCommand(_ => UpdateAvailable = false);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _refreshTimer.Tick += (_, _) => RefreshDiskUsage();
@@ -56,6 +63,7 @@ public class MainViewModel : INotifyPropertyChanged
         Refresh();
         UpdateRamInfo();
         RestorePersistentDisks();
+        CheckForUpdates();
     }
 
     public ObservableCollection<string> DriveLetters { get; }
@@ -69,6 +77,20 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand RefreshCommand { get; }
     public ICommand InstallImDiskCommand { get; }
     public ICommand SettingsCommand { get; }
+    public ICommand UpdateCommand { get; }
+    public ICommand DismissUpdateCommand { get; }
+
+    public bool UpdateAvailable
+    {
+        get => _updateAvailable;
+        set => SetField(ref _updateAvailable, value);
+    }
+
+    public string UpdateVersion
+    {
+        get => _updateVersion;
+        set => SetField(ref _updateVersion, value);
+    }
 
     public string SelectedDriveLetter
     {
@@ -439,6 +461,34 @@ public class MainViewModel : INotifyPropertyChanged
                 Label = disk.Label,
             });
         }
+    }
+
+    private async void CheckForUpdates()
+    {
+        var hasUpdate = await _updateService.CheckForUpdateAsync();
+        if (hasUpdate)
+        {
+            UpdateVersion = _updateService.LatestVersionTag ?? "";
+            UpdateAvailable = true;
+        }
+
+        if (!_updateCheckedOnce)
+        {
+            _updateCheckedOnce = true;
+            var delayTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(2) };
+            delayTimer.Tick += (_, _) =>
+            {
+                delayTimer.Stop();
+                CheckForUpdates();
+            };
+            delayTimer.Start();
+        }
+    }
+
+    private void OpenUpdatePage()
+    {
+        if (_updateService.DownloadUrl is { } url)
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
