@@ -411,20 +411,18 @@ public class MainViewModel : INotifyPropertyChanged
         var existing = _imDisk.ListRamDisks();
         var toRestore = _settings.SavedDisks
             .Where(s => !existing.Any(e => e.DriveLetter.Equals(s.DriveLetter, StringComparison.OrdinalIgnoreCase)))
+            .Select(s => (s.DriveLetter, s.SizeBytes, s.FileSystem, s.Label))
             .ToList();
 
         if (toRestore.Count == 0) return;
 
         StatusMessage = $"Restoring {toRestore.Count} persistent disk(s)...";
-        foreach (var saved in toRestore)
-        {
-            await Task.Run(() => _imDisk.CreateRamDisk(saved.DriveLetter, saved.SizeBytes, saved.FileSystem, saved.Label));
-        }
+        var result = await Task.Run(() => _imDisk.CreateRamDisksBatch(toRestore));
 
         Refresh();
         UpdateRamInfo();
         RefreshDriveLetters();
-        StatusMessage = $"Restored {toRestore.Count} persistent disk(s)";
+        StatusMessage = result.Message;
     }
 
     private void OpenSettings()

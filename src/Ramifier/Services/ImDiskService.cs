@@ -159,6 +159,51 @@ public class ImDiskService
         return disk;
     }
 
+    public (bool Success, string Message) CreateRamDisksBatch(List<(string DriveLetter, long SizeBytes, string FileSystem, string Label)> disks)
+    {
+        if (disks.Count == 0) return (true, "Nothing to restore");
+
+        if (IsElevated())
+        {
+            int created = 0;
+            foreach (var (dl, size, fs, lbl) in disks)
+            {
+                var r = CreateRamDisk(dl, size, fs, lbl);
+                if (r.Success) created++;
+            }
+            return (true, $"Restored {created}/{disks.Count} disk(s)");
+        }
+
+        var commands = new List<string>();
+        foreach (var (dl, size, fs, lbl) in disks)
+        {
+            string sizeMb = (size / (1024 * 1024)).ToString();
+            string letter = dl.TrimEnd(':');
+            commands.Add($"\"{_imDiskPath}\" -a -s {sizeMb}M -m {letter}: -p \"/fs:{fs} /q /y /v:{lbl}\"");
+        }
+
+        try
+        {
+            var script = string.Join(" & ", commands);
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{script}\"",
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            process.Start();
+            process.WaitForExit(60000);
+            return (true, $"Restored {disks.Count} persistent disk(s)");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Elevation cancelled or failed: {ex.Message}");
+        }
+    }
+
     private static (bool Success, string Message) RunElevated(string arguments)
     {
         try
