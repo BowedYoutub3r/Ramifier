@@ -22,16 +22,9 @@ jobs:
           dotnet-quality: 'preview'
 
       - name: Publish self-contained exe
-        run: >
-          dotnet publish src/Ramifier/Ramifier.csproj
-          -c Release
-          -r win-x64
-          --self-contained
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true
-          -p:Version=${{ github.ref_name }}
-          -o publish
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v',''
+          dotnet publish src/Ramifier/Ramifier.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:Version=$version -o publish
 
       - name: Create release zip
         run: |
