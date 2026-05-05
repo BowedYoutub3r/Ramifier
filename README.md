@@ -67,6 +67,19 @@ src/Ramifier/
   App.xaml         Theme and styles
 ```
 
+## Disclaimer
+
+Ramifier is provided as is, without warranty of any kind. The authors and contributors are not liable for any damages arising from the use or misuse of this software, including but not limited to:
+
+Data loss resulting from RAM disk removal, system crashes, power failure, or unexpected shutdowns
+System instability caused by excessive RAM allocation or driver conflicts
+Corruption of files stored on RAM disks
+Hardware damage resulting from memory exhaustion or system overload
+Loss of productivity or business interruption
+
+By using Ramifier, you acknowledge that RAM disks are volatile by nature — all data is permanently lost when a disk is removed or the system restarts. Always back up any important data before storing it on a RAM disk.
+Use at your own risk.
+
 ## License
 
 MIT
