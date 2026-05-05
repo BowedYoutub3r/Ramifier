@@ -17,6 +17,9 @@ public partial class SettingsWindow : Window
 
         PersistentCheck.IsChecked = settings.PersistentDisks;
         StartupCheck.IsChecked = settings.StartOnBoot;
+
+        var v = UpdateService.CurrentVersion;
+        VersionText.Text = $"Ramifier v{v.Major}.{v.Minor}.{v.Build}";
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
