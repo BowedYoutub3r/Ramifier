@@ -19,6 +19,8 @@
 
         <!-- Header -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <Button DockPanel.Dock="Right" Content="Settings" Style="{StaticResource GhostButton}"
+                    Command="{Binding SettingsCommand}" VerticalAlignment="Center"/>
             <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
                        Text="Ramifier" VerticalAlignment="Center"/>
             <TextBlock Text="RAM Disk Manager" FontSize="13"
@@ -200,11 +202,27 @@
                                                     </TextBlock>
                                                 </StackPanel>
 
-                                                <Button Grid.Column="2" Content="✕" Style="{StaticResource GhostButton}"
+                                                <Button Grid.Column="2" Content="✕"
                                                         Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
-                                                        VerticalAlignment="Center" Width="30" Height="30" Padding="0"
-                                                        FontSize="12"/>
+                                                        VerticalAlignment="Center" MinWidth="32" MinHeight="32"
+                                                        FontSize="13" Foreground="{StaticResource TextDimBrush}" Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="border" Background="Transparent"
+                                                                    CornerRadius="6" Width="32" Height="32"
+                                                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBrush}"/>
+                                                                    <Setter Property="Foreground" Value="#FCA5A5"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

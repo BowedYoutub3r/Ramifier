@@ -250,6 +250,34 @@
                 <Setter Property="Padding" Value="0,0,0,6"/>
             </Style>
 
+            <!-- CheckBox (toggle switch) -->
+            <Style TargetType="CheckBox">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <Grid Background="Transparent">
+                                <Border x:Name="track" Width="36" Height="20" CornerRadius="10"
+                                        Background="{StaticResource HoverBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"/>
+                                <Border x:Name="thumb" Width="14" Height="14" CornerRadius="7"
+                                        Background="{StaticResource TextDimBrush}"
+                                        HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="track" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                    <Setter TargetName="track" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                    <Setter TargetName="thumb" Property="Background" Value="{StaticResource AccentFgBrush}"/>
+                                    <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
+                                    <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- ProgressBar -->
             <Style TargetType="ProgressBar">
                 <Setter Property="Background" Value="{StaticResource HoverBrush}"/>

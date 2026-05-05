@@ -12,7 +12,9 @@ namespace Ramifier.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ImDiskService _imDisk = new();
+    private readonly SettingsService _settingsService = new();
     private readonly DispatcherTimer _refreshTimer;
+    private AppSettings _settings;
 
     private string _selectedDriveLetter = "";
     private int _selectedSizeValue = 1;
@@ -27,6 +29,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel()
     {
+        _settings = _settingsService.Load();
+
         DriveLetters = new ObservableCollection<string>(ImDiskService.GetAvailableDriveLetters());
         ActiveDisks = new ObservableCollection<RamDisk>();
         SizeUnits = ["MB", "GB"];
@@ -42,6 +46,7 @@ public class MainViewModel : INotifyPropertyChanged
         RemoveAllCommand = new RelayCommand(_ => RemoveAll(), _ => ActiveDisks.Count > 0);
         RefreshCommand = new RelayCommand(_ => Refresh());
         InstallImDiskCommand = new RelayCommand(_ => InstallImDisk(), _ => !IsBusy && !IsImDiskInstalled);
+        SettingsCommand = new RelayCommand(_ => OpenSettings());
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _refreshTimer.Tick += (_, _) => RefreshDiskUsage();
@@ -50,6 +55,7 @@ public class MainViewModel : INotifyPropertyChanged
         CheckImDisk();
         Refresh();
         UpdateRamInfo();
+        RestorePersistentDisks();
     }
 
     public ObservableCollection<string> DriveLetters { get; }
@@ -62,6 +68,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand RemoveAllCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand InstallImDiskCommand { get; }
+    public ICommand SettingsCommand { get; }
 
     public string SelectedDriveLetter
     {
@@ -202,12 +209,33 @@ public class MainViewModel : INotifyPropertyChanged
 
     private async void CreateDisk()
     {
+        long sizeBytes = CalculateSizeBytes();
+        long available = ImDiskService.GetAvailableRam();
+
+        if (sizeBytes > available)
+        {
+            var sizeFmt = RamDisk.FormatBytes(sizeBytes);
+            var availFmt = RamDisk.FormatBytes(available);
+            var result = MessageBox.Show(
+                $"The requested disk size ({sizeFmt}) exceeds available RAM ({availFmt}).\n\n" +
+                "This may cause system instability or force Windows to use the page file heavily.\n\n" +
+                "Continue anyway?",
+                "Insufficient RAM",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                StatusMessage = "Disk creation cancelled";
+                return;
+            }
+        }
+
         IsBusy = true;
         StatusMessage = $"Creating {SelectedSizeValue} {SelectedSizeUnit} RAM disk on {SelectedDriveLetter}:...";
 
         try
         {
-            long sizeBytes = CalculateSizeBytes();
             var result = await Task.Run(() =>
                 _imDisk.CreateRamDisk(SelectedDriveLetter, sizeBytes, SelectedFileSystem, VolumeLabel));
 
@@ -215,6 +243,7 @@ public class MainViewModel : INotifyPropertyChanged
 
             if (result.Success)
             {
+                SaveDiskToSettings(SelectedDriveLetter, sizeBytes, SelectedFileSystem, VolumeLabel);
                 Refresh();
                 UpdateRamInfo();
                 RefreshDriveLetters();
@@ -241,6 +270,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             var result = await Task.Run(() => _imDisk.RemoveRamDisk(disk.DriveLetter, disk.UnitNumber));
             StatusMessage = result.Message;
+            RemoveDiskFromSettings(disk.DriveLetter);
             Refresh();
             UpdateRamInfo();
             RefreshDriveLetters();
@@ -264,7 +294,10 @@ public class MainViewModel : INotifyPropertyChanged
         {
             var disks = ActiveDisks.ToList();
             foreach (var disk in disks)
+            {
                 await Task.Run(() => _imDisk.RemoveRamDisk(disk.DriveLetter, disk.UnitNumber));
+                RemoveDiskFromSettings(disk.DriveLetter);
+            }
 
             StatusMessage = $"Removed {disks.Count} RAM disk(s)";
             Refresh();
@@ -325,6 +358,87 @@ public class MainViewModel : INotifyPropertyChanged
             DriveLetters.Add(letter);
         if (DriveLetters.Count > 0 && !DriveLetters.Contains(SelectedDriveLetter))
             SelectedDriveLetter = DriveLetters[0];
+    }
+
+    private void SaveDiskToSettings(string driveLetter, long sizeBytes, string fileSystem, string label)
+    {
+        if (!_settings.PersistentDisks) return;
+
+        _settings.SavedDisks.RemoveAll(d => d.DriveLetter.Equals(driveLetter, StringComparison.OrdinalIgnoreCase));
+        _settings.SavedDisks.Add(new SavedDisk
+        {
+            DriveLetter = driveLetter,
+            SizeBytes = sizeBytes,
+            FileSystem = fileSystem,
+            Label = label,
+        });
+        _settingsService.Save(_settings);
+    }
+
+    private void RemoveDiskFromSettings(string driveLetter)
+    {
+        _settings.SavedDisks.RemoveAll(d => d.DriveLetter.Equals(driveLetter, StringComparison.OrdinalIgnoreCase));
+        _settingsService.Save(_settings);
+    }
+
+    private async void RestorePersistentDisks()
+    {
+        if (!_settings.PersistentDisks || _settings.SavedDisks.Count == 0) return;
+        if (!_imDisk.IsInstalled()) return;
+
+        var existing = _imDisk.ListRamDisks();
+        var toRestore = _settings.SavedDisks
+            .Where(s => !existing.Any(e => e.DriveLetter.Equals(s.DriveLetter, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        if (toRestore.Count == 0) return;
+
+        StatusMessage = $"Restoring {toRestore.Count} persistent disk(s)...";
+        foreach (var saved in toRestore)
+        {
+            await Task.Run(() => _imDisk.CreateRamDisk(saved.DriveLetter, saved.SizeBytes, saved.FileSystem, saved.Label));
+        }
+
+        Refresh();
+        UpdateRamInfo();
+        RefreshDriveLetters();
+        StatusMessage = $"Restored {toRestore.Count} persistent disk(s)";
+    }
+
+    private void OpenSettings()
+    {
+        var window = new SettingsWindow(_settings)
+        {
+            Owner = Application.Current.MainWindow,
+        };
+
+        if (window.ShowDialog() == true)
+        {
+            _settingsService.Save(_settings);
+
+            if (!_settings.PersistentDisks)
+                _settings.SavedDisks.Clear();
+            else
+                SyncSavedDisksFromActive();
+
+            _settingsService.Save(_settings);
+            StatusMessage = "Settings saved";
+        }
+    }
+
+    private void SyncSavedDisksFromActive()
+    {
+        _settings.SavedDisks.Clear();
+        foreach (var disk in ActiveDisks)
+        {
+            _settings.SavedDisks.Add(new SavedDisk
+            {
+                DriveLetter = disk.DriveLetter,
+                SizeBytes = disk.SizeBytes,
+                FileSystem = disk.FileSystem,
+                Label = disk.Label,
+            });
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
