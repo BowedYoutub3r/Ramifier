@@ -82,4 +82,4 @@ Use at your own risk.
 
 ## License
 
-This project is licensed under the [GNU GENERAL PUBLIC LICENSE](License)
+This project is licensed under the [GNU GENERAL PUBLIC LICENSE](LICENSE)
