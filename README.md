@@ -9,6 +9,7 @@ A Windows RAM disk manager built with WPF. Creates virtual drives backed entirel
 - Create RAM disks with configurable size, drive letter, and file system (NTFS, FAT32, exFAT)
 - Live monitoring of disk usage, refreshed every 3 seconds
 - System memory overview showing total and available RAM
+- Persistent disk option (Recreates upon start automatically)
 - Force-dismount removal of active disks
 - UAC elevation on demand — runs without admin, elevates only for disk operations
 - Per-monitor DPI aware UI with dark theme
