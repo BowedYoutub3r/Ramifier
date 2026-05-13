@@ -7,7 +7,7 @@
 
 A Windows RAM disk manager built with WPF. Creates virtual drives backed entirely by RAM using ImDisk, so a 1 GB disk uses 1 GB of physical memory.
 
-<img width="1026" height="826" alt="image" src="https://github.com/user-attachments/assets/6ccd3fe3-8340-4161-858a-ec6bb693acdd" />
+<img width="1024" height="822" alt="image" src="https://github.com/user-attachments/assets/9559db8c-d11d-4470-949c-e87d055d85df" />
 
 ## Features
 
